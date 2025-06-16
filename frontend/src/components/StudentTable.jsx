@@ -112,7 +112,8 @@ export default function StudentTable({ className }) {
     const fetchStudents = async () => {
       try {
         const res = await axios.get("/students"); // Update port if different
-     
+
+        
         setStudentList(res.data);
       } catch (err) {
         console.error("Failed to fetch students:", err);

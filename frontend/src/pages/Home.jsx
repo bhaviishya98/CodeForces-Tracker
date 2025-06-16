@@ -11,44 +11,8 @@ import StudentTable from "@/components/StudentTable";
 import { useEffect, useState } from "react";
 import axios from "@/lib/axios";
 
+const API = import.meta.env.VITE_API_URL;
 
-const stats = [
-  {
-    title: "Total Students",
-    value: 3,
-    description: "+2 active this week",
-    icon: <Users className="  text-muted-foreground" />,
-  },
-  {
-    title: "Average Rating",
-    value: 1443,
-    description: "+12 from last month",
-    icon: <TrendingUp className="  text-muted-foreground" />,
-    valueClass: "text-black dark:text-white",
-    descriptionClass: "text-green-600",
-  },
-  {
-    title: "Top Performer",
-    value: 1680,
-    description: "Jane Smith",
-    icon: <Award className="  text-muted-foreground" />,
-  },
-  {
-    title: "Inactive Students",
-    value: 1,
-    description: "Need attention",
-    icon: <Clock className="  text-muted-foreground" />,
-    valueClass: "text-red-600",
-    descriptionClass: "text-muted-foreground",
-  },
-  {
-    title: "Contributions",
-    value: 520,
-    description: "+45 this week",
-    icon: <Target className="  text-muted-foreground" />,
-    descriptionClass: "text-green-600",
-  },
-];
 
 const Loader = () => (
   <div className="flex flex-col items-center justify-center h-screen">
@@ -68,7 +32,7 @@ const Home = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const res = await axios.get("/students");
+        const res = await axios.get(`${API}/students`);
         const data = res.data;
         setStudents(data);
 
