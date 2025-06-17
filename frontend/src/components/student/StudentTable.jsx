@@ -20,15 +20,17 @@ import {
   Heart,
 } from "lucide-react";
 import { useState, useEffect } from "react";
-import AddStudentModal from "@/components/AddStudentModal"; // adjust path as needed
+import AddStudentModal from "@/components/student/AddStudentModal"; // adjust path as needed
 import axios from "@/lib/axios"; // adjust path as needed
-import EditStudentModal from "@/components/EditStudentModal"; // adjust path as needed
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
-import * as XLSX from "xlsx";
+import EditStudentModal from "@/components/student/EditStudentModal"; // adjust path as needed
+import { useNavigate } from "react-router-dom";
+
 
 
 export default function StudentTable({ className }) {
+  const navigate = useNavigate();
+
+
   const [modalOpen, setModalOpen] = useState(false);
   const [studentList, setStudentList] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
@@ -300,10 +302,16 @@ export default function StudentTable({ className }) {
                       <td className="p-3">{student.email}</td>
                       <td className="p-3">{student.phone}</td>
                       <td className="p-3">
-                        <span className="px-2 py-1 rounded bg-muted text-xs font-mono">
+                        <button
+                          className="px-2 py-1 rounded bg-muted text-xs font-mono hover:underline text-blue-600"
+                          onClick={() =>
+                            navigate(`/students/${student.cfHandle}`, {state: { student }})
+                          }
+                        >
                           {student.cfHandle}
-                        </span>
+                        </button>
                       </td>
+
                       <td
                         className="p-3 font-semibold"
                         style={{

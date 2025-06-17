@@ -1,16 +1,18 @@
 // components/Header.jsx
-import { useTheme } from "@/components/theme-provider";
+import { useTheme } from "@/components/layout/theme-provider";
 import { Switch } from "@/components/ui/switch";
 import { Trophy, Sun, Moon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import "@/index.css"; // ensure you load Tailwind
+import { useNavigate } from "react-router-dom";
 
 export default function Header() {
   const { theme, setTheme } = useTheme();
   const [isDark, setIsDark] = useState(theme === "dark");
   const [studentList, setStudentList] = useState([]);
-  
+  const navigate = useNavigate();
+
   useEffect(() => {
     setIsDark(theme === "dark");
   }, [theme]);
@@ -30,15 +32,14 @@ export default function Header() {
 
     setStudentList(updatedList);
   };
-  
-  
+
   return (
     <div className="flex flex-row justify-between items-center gap-2 mt-4 px-8 py-2">
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
+        <button className="flex items-center gap-2" onClick={() => navigate("/")}>
           <Trophy className="h-[2.3rem] w-[2.3rem] text-yellow-500" />
           <h1 className="text-5xl font-bold">Codeforces Tracker</h1>
-        </div>
+        </button>
         <h2 className="text-muted-foreground font-normal text-base">
           Track and manage student performance on Codeforces
         </h2>

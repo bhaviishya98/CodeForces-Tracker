@@ -87,4 +87,16 @@ router.delete('/students/:id', async (req, res) => {
     }
 });
 
+router.get('/students/:handle', async (req, res) => {
+  try {
+    const { handle } = req.params;
+    const student = await Students.findOne({ cfHandle: handle });
+    if (!student) return res.status(404).json({ error: "Student not found" });
+    res.json(student);
+  } catch (err) {
+    res.status(500).json({ error: "Server error" });
+  }
+});
+
+
 export default router;

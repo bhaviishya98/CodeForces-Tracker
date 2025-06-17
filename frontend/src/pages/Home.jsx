@@ -7,17 +7,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Users, TrendingUp, Award, Clock, Target } from "lucide-react";
-import StudentTable from "@/components/StudentTable";
+import StudentTable from "@/components/student/StudentTable";
 import { useEffect, useState } from "react";
 import axios from "@/lib/axios";
 
-const API = import.meta.env.VITE_API_URL;
 
 
-const Loader = () => (
-  <div className="flex flex-col items-center justify-center h-screen">
-    <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-blue-600"></div>
-    <p className="mt-4 text-lg text-muted-foreground">Loading Dashboard...</p>
+const SkeletonCard = () => (
+  <div className="animate-pulse rounded-xl border p-4 shadow-sm space-y-4">
+    <div className="flex justify-between items-center">
+      <div className="h-6 w-2/3 bg-muted rounded" />
+      <div className="h-6 w-6 bg-muted rounded-full" />
+    </div>
+    <div className="h-8 w-1/2 bg-muted rounded" />
+    <div className="h-4 w-2/3 bg-muted rounded" />
   </div>
 );
 
@@ -32,7 +35,7 @@ const Home = () => {
   useEffect(() => {
     const fetchStudents = async () => {
       try {
-        const res = await axios.get(`${API}/students`);
+        const res = await axios.get(`/students`);
         const data = res.data;
         setStudents(data);
 
@@ -151,7 +154,12 @@ const Home = () => {
   return (
     <main className="flex flex-col bg-background">
       {loadingStats ? (
-        <Loader /> // ✅ Show loader while stats are loading
+        // 💡 Show 5 skeleton cards just like real ones
+        <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-8">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </div>
       ) : (
         <>
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-8">
@@ -187,6 +195,7 @@ const Home = () => {
       )}
     </main>
   );
+  
   
 };
 
