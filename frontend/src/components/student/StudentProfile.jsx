@@ -2,8 +2,10 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import ContestHistory from "@/components/ContestHistory/index";
+import ProblemSolving from "../ProblemSolving/index";
 import axios from "@/lib/axios";
 import { useEffect, useState } from "react";
+
 
 const StudentProfile = () => {
   const { handle } = useParams();
@@ -31,11 +33,11 @@ const StudentProfile = () => {
           setLoading(false);
         }
       };
-
+      
       fetchStudent();
     }
   }, [handle, student]);
-
+  
   if (loading) return <div>Loading student profile...</div>;
   if (error) return <div>{error}</div>;
   if (!student) return <div>No student data available</div>;
@@ -72,7 +74,6 @@ const StudentProfile = () => {
             </p>
           )}
 
-
           <p className="text-muted-foreground text-sm">
             Total Contribution:{" "}
             <span className="font-medium text-foreground">
@@ -108,14 +109,13 @@ const StudentProfile = () => {
 
         <TabsContent value="contest">
           <div className="bg-card p-4 rounded-xl shadow-sm">
-            <ContestHistory />
+            <ContestHistory studentId={student._id} />
           </div>
         </TabsContent>
 
         <TabsContent value="problems">
           <div className="bg-card p-4 rounded-xl shadow-sm">
-            <h2 className="text-xl font-bold mb-4">Problem Solving Data</h2>
-            <p className="text-muted-foreground">Coming soon...</p>
+            <ProblemSolving studentId={student._id} />
           </div>
         </TabsContent>
       </Tabs>

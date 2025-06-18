@@ -2,57 +2,32 @@ import { useState, useEffect } from "react";
 import FilterSelector from "./FilterSelector";
 import RatingGraph from "./RatingGraph";
 import ContestTable from "./ContestTable";
-import { useParams } from "react-router-dom";
 import axios from "@/lib/axios";
 import { Skeleton } from "@/components/ui/skeleton";
 
-const ContestHistory = () => {
+const ContestHistory = ({ studentId }) => {
   const [filter, setFilter] = useState(30);
-  const [allContests, setAllContests] = useState([]);
-  const [filteredContests, setFilteredContests] = useState([]);
+  const [contests, setContests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const { handle } = useParams();
-
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchContests = async () => {
       try {
         setLoading(true);
+   
+        await new Promise((res) => setTimeout(res, 300)); // optional delay
 
-        const [contestRes, unsolvedRes] = await Promise.all([
-          axios.get(`/contests/${handle}`),
-          axios.get(`/contests/unsolvedProblem/${handle}`),
-        ]);
-
-        const contests = contestRes.data;
-        const unsolved = unsolvedRes.data;
-
-        const merged = contests.map((contest) => {
-          const match = unsolved.find((u) => u.contestId === contest.contestId);
-          return {
-            ...contest,
-            unsolvedProblems: match ? match.unsolvedProblems : "-",
-          };
-        });
-
-        setAllContests(merged);
+        const res = await axios.get(`/contests/${studentId}?days=${filter}`);
+        setContests(res.data);
       } catch (err) {
-        console.error("Error fetching contest or unsolved data:", err);
+        console.error("Error fetching contest data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchData();
-  }, [handle]);
-
-  useEffect(() => {
-    const cutoff = Date.now() - filter * 24 * 60 * 60 * 1000;
-    const filtered = allContests.filter(
-      (c) => new Date(c.date).getTime() >= cutoff
-    );
-    setFilteredContests(filtered);
-  }, [filter, allContests]);
+    fetchContests();
+  }, [studentId, filter]);
 
   return (
     <div className="bg-card p-4 rounded-xl shadow-sm">
@@ -66,11 +41,15 @@ const ContestHistory = () => {
           <Skeleton className="w-full h-[200px] rounded-lg" />
           <Skeleton className="w-full h-[300px] rounded-lg" />
         </div>
+      ) : contests.length === 0 ? (
+        <p className="text-muted-foreground mt-4">
+          No contests found in the selected duration.
+        </p>
       ) : (
         <>
-          <RatingGraph data={filteredContests} />
+          <RatingGraph data={contests} />
           <div className="mt-6">
-            <ContestTable contests={filteredContests} />
+            <ContestTable contests={contests} />
           </div>
         </>
       )}

@@ -25,21 +25,21 @@ import axios from "@/lib/axios"; // adjust path as needed
 import EditStudentModal from "@/components/student/EditStudentModal"; // adjust path as needed
 import { useNavigate } from "react-router-dom";
 
-
-
 export default function StudentTable({ className }) {
   const navigate = useNavigate();
-
 
   const [modalOpen, setModalOpen] = useState(false);
   const [studentList, setStudentList] = useState([]);
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editStudent, setEditStudent] = useState(null);
   const [selectedStudent, setSelectedStudent] = useState(null);
-  const [sortOrder, setSortOrder] = useState("asc"); 
+  const [sortOrder, setSortOrder] = useState("asc");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
 
+  const saveToLocalStorage = (students) => {
+    localStorage.setItem("studentData", JSON.stringify(students));
+  };
 
   // const exportData = () => {
   //   const choice = window.prompt("Type 'csv' or 'excel' to export:");
@@ -78,22 +78,19 @@ export default function StudentTable({ className }) {
       alert("Failed to export data.");
     }
   };
-  
-
 
   const filteredStudents = studentList.filter((student) => {
     const q = searchQuery.toLowerCase();
+
     const matchesSearch =
-      student.name.toLowerCase().includes(q) ||
-      student.cfHandle.toLowerCase().includes(q);
+      (student?.name?.toLowerCase?.() ?? "").includes(q) ||
+      (student?.cfHandle?.toLowerCase?.() ?? "").includes(q);
 
     const matchesStatus =
       statusFilter === "All" || student.status === statusFilter.toLowerCase();
 
     return matchesSearch && matchesStatus;
   });
-  
-
 
   const sortByName = () => {
     const sorted = [...studentList].sort((a, b) => {
@@ -107,16 +104,14 @@ export default function StudentTable({ className }) {
     setStudentList(sorted);
     setSortOrder(sortOrder === "asc" ? "desc" : "asc"); // toggle order
   };
-  
-  
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         const res = await axios.get("/students"); // Update port if different
 
-        
         setStudentList(res.data);
+        saveToLocalStorage(res.data);
       } catch (err) {
         console.error("Failed to fetch students:", err);
       }
@@ -125,22 +120,26 @@ export default function StudentTable({ className }) {
     fetchStudents();
   }, []);
 
-  const handleAddStudent = (newStudent) => {
-    console.log("New Student Added:", newStudent);
-    setStudentList((prev) => [...prev, newStudent]);
-    
+  const handleAddStudent = async () => {
+    try {
+      const res = await axios.get("/students");
+      setStudentList(res.data);
+      saveToLocalStorage(res.data);
+      window.dispatchEvent(new Event("studentDataUpdated"));
+    } catch (err) {
+      console.error("Failed to refresh student list:", err);
+    }
   };
-  
 
   const handleEditSave = async (updatedData) => {
-    
-    setStudentList((prev) =>
-      prev.map((student) =>
-        student.email === editStudent.email
-          ? { ...student, ...updatedData }
-          : student
-      )
+    const updatedList = studentList.map((student) =>
+      student.email === editStudent.email
+        ? { ...student, ...updatedData }
+        : student
     );
+    setStudentList(updatedList);
+    saveToLocalStorage(updatedList); // Save updated list
+    window.dispatchEvent(new Event("studentDataUpdated"));
 
     setEditStudent(null);
     setEditModalOpen(false);
@@ -171,7 +170,10 @@ export default function StudentTable({ className }) {
   const handleRemoveStudent = async (id) => {
     try {
       await axios.delete(`students/${id}`);
-      setStudentList((prev) => prev.filter((student) => student._id !== id));
+      const updatedList = studentList.filter((student) => student._id !== id);
+      setStudentList(updatedList);
+      saveToLocalStorage(updatedList); // Save after 
+      window.dispatchEvent(new Event("studentDataUpdated"));
     } catch (err) {
       console.error("Failed to delete student:", err);
     }
@@ -180,6 +182,8 @@ export default function StudentTable({ className }) {
   const confirmDelete = (id) => {
     if (confirm("Are you sure you want to delete this student?")) {
       handleRemoveStudent(id);
+      window.dispatchEvent(new Event("studentDataUpdated"));
+
     }
   };
 
@@ -305,7 +309,9 @@ export default function StudentTable({ className }) {
                         <button
                           className="px-2 py-1 rounded bg-muted text-xs font-mono hover:underline text-blue-600"
                           onClick={() =>
-                            navigate(`/students/${student.cfHandle}`, {state: { student }})
+                            navigate(`/students/${student.cfHandle}`, {
+                              state: { student },
+                            })
                           }
                         >
                           {student.cfHandle}

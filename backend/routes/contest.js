@@ -1,81 +1,95 @@
-// server.js or routes/contest.js
 import express from "express";
-import axios from "axios";
+import ContestHistory from "../models/ContestHistory.js"; 
+import SolvedProblem from "../models/SolvedProblem.js";
 
 const router = express.Router();
 
-router.get('/contests/:handle', async (req, res) => {
-  const { handle } = req.params;
-
+router.get("/contests/:studentId", async (req, res) => {
   try {
-    const response = await axios.get(
-      `https://codeforces.com/api/user.rating?handle=${handle}`
-    );
+    const { studentId } = req.params;
+    const days = parseInt(req.query.days) || 30;
 
-    const contestData = response.data.result;
-
-    // Optional: Format it if needed
-    const formatted = contestData.map((c) => ({
-      contestId: c.contestId,
-      contestName: c.contestName,
-      rank: c.rank,
-      oldRating: c.oldRating,
-      newRating: c.newRating,
-      change: c.newRating - c.oldRating,
-      date: new Date(c.ratingUpdateTimeSeconds * 1000),
-    }));
-
-    res.json(formatted);
-  } catch (err) {
-    console.error("Failed to fetch contest data:", err.message);
-    res.status(500).json({ error: "Failed to fetch contest data" });
-  }
-});
-
-router.get("/contests/unsolvedProblem/:handle", async (req, res) => {
-  const { handle } = req.params;
-
-  try {
-    // 1. Get user's contest history
-    const { data: contestRes } = await axios.get(
-      `https://codeforces.com/api/user.rating?handle=${handle}`
-    );
-    const contests = contestRes.result;
-
-    // 2. Get user's submissions
-    const { data: subRes } = await axios.get(
-      `https://codeforces.com/api/user.status?handle=${handle}&from=1&count=10000`
-    );
-    const submissions = subRes.result;
-
-    // 3. Mark solved problems
-    const solved = new Set();
-    for (const sub of submissions) {
-      if (sub.verdict === "OK") {
-        const key = `${sub.contestId}-${sub.problem.index}`;
-        solved.add(key);
-      }
+    if (!studentId) {
+      return res.status(404).json({ message: "Student not found" });
     }
 
-    // 4. Estimate unsolved problems (A–E assumed)
-    const allIndexes = ["A", "B", "C", "D", "E"];
-    const contestUnsolved = contests.map((contest) => {
-      const unsolved = allIndexes.reduce((count, index) => {
-        const key = `${contest.contestId}-${index}`;
-        return solved.has(key) ? count : count + 1;
-      }, 0);
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - days);
 
-      return {
-        contestId: contest.contestId,
-        unsolvedProblems: unsolved,
-      };
-    });
+    const contests = await ContestHistory.find({
+      student: studentId,
+      date: { $gte: fromDate },
+    }).sort({ date: -1 });
 
-    res.json(contestUnsolved);
+    res.status(200).json(contests);
   } catch (error) {
-    console.error("Error in /unsolved/:handle", error.message);
-    res.status(500).json({ error: "Failed to fetch unsolved problems." });
+    console.error("Error fetching contest history:", error);
+    res.status(500).json({ message: "Server error" });
   }
 });
+
+router.get("/contests/problemSolving/:studentId", async (req, res) => {
+  const { studentId } = req.params;
+  const days = parseInt(req.query.days) || 30;
+
+  try {
+    const fromDate = new Date();
+    fromDate.setDate(fromDate.getDate() - days);
+
+    const problems = await SolvedProblem.find({
+      student: studentId,
+      timestamp: { $gte: fromDate },
+    });
+
+    if (!problems.length)
+      return res.json({ message: "No problem solving data found", data: [] });
+
+    let totalSolved = problems.length;
+    let totalRating = 0;
+    let ratingBuckets = {};
+    let mostDifficultRating = 0;
+    let mostDifficultProblems = [];
+    let dateMap = {};
+
+    problems.forEach((problem) => {
+      // Avg rating calc
+      if (problem.rating) {
+        totalRating += problem.rating;
+        ratingBuckets[problem.rating] =
+          (ratingBuckets[problem.rating] || 0) + 1;
+
+        if (problem.rating > mostDifficultRating) {
+          mostDifficultRating = problem.rating;
+          mostDifficultProblems = [problem];
+        } else if (problem.rating === mostDifficultRating) {
+          mostDifficultProblems.push(problem);
+        }
+      }
+
+      // Heatmap
+      const dateKey = new Date(problem.timestamp).toISOString().split("T")[0];
+      dateMap[dateKey] = (dateMap[dateKey] || 0) + 1;
+    });
+
+    res.json({
+      totalSolved,
+      averageRating: totalSolved ? (totalRating / totalSolved).toFixed(2) : 0,
+      averagePerDay: (totalSolved / days).toFixed(2),
+      ratingBuckets,
+      mostDifficultProblems: mostDifficultProblems.map((p) => ({
+        name: p.name,
+        rating: p.rating,
+        contestId: p.contestId,
+        index: p.index,
+      })),
+      heatmap: dateMap,
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Problem fetching problem-solving data" });
+  }
+});
+
+
 
 export default router;

@@ -11,8 +11,6 @@ import StudentTable from "@/components/student/StudentTable";
 import { useEffect, useState } from "react";
 import axios from "@/lib/axios";
 
-
-
 const SkeletonCard = () => (
   <div className="animate-pulse rounded-xl border p-4 shadow-sm space-y-4">
     <div className="flex justify-between items-center">
@@ -24,133 +22,105 @@ const SkeletonCard = () => (
   </div>
 );
 
-
 const Home = () => {
   const [students, setStudents] = useState([]);
   const [stats, setStats] = useState([]);
   const [loadingStats, setLoadingStats] = useState(true);
 
-  
+  const fetchStatsFromLocalStorage = () => {
+    const stored = localStorage.getItem("studentData");
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      setStudents(parsed);
 
-  useEffect(() => {
-    const fetchStudents = async () => {
-      try {
-        const res = await axios.get(`/students`);
-        const data = res.data;
-        setStudents(data);
-
-        const sevenDaysAgo = Math.floor(Date.now() / 1000) - 7 * 24 * 60 * 60;
-
-        const fetchRecentContributions = async (handle) => {
-          try {
-            const cfRes = await fetch(
-              `https://codeforces.com/api/user.status?handle=${handle}`
-            );
-            const cfData = await cfRes.json();
-            if (cfData.status !== "OK") return 0;
-
-            const recentSubs = cfData.result.filter(
-              (s) => s.creationTimeSeconds >= sevenDaysAgo && s.verdict === "OK"
-            );
-
-            return recentSubs.length;
-          } catch (err) {
-            console.error("Error fetching CF data for", handle, err);
-            return 0;
-          }
-        };
-
-        // Calculate contributions for each student
-        const contributionsArray = await Promise.all(
-          data.map(async (s) => {
-            if (!s.cfHandle) return 0;
-            return await fetchRecentContributions(s.cfHandle);
-          })
-        );
-
-        // Add those contributions to student objects temporarily
-        const updatedData = data.map((s, i) => ({
-          ...s,
-          recentContribution: contributionsArray[i],
-        }));
-
-        const total = updatedData.length;
-        const averageRating = total
+      const totalStudents = parsed.length;
+      const averageRating =
+        totalStudents > 0
           ? Math.round(
-              updatedData.reduce((sum, s) => sum + (s.rating || 0), 0) / total
+              parsed.reduce((acc, curr) => acc + (curr.rating || 0), 0) /
+                totalStudents
             )
           : 0;
-        const topPerformer = updatedData.reduce(
-          (top, s) => (s.rating > (top.rating || 0) ? s : top),
-          {}
-        );
-        const inactive = updatedData.filter(
-          (s) => s.status === "inactive"
-        ).length;
-        const contributions = updatedData.reduce(
-          (sum, s) => sum + (s.recentContribution || 0),
-          0
-        );
 
-        let ratingDescription = "";
-        if (averageRating >= 2000) {
-          ratingDescription = "Excellent performance";
-        } else if (averageRating >= 1600) {
-          ratingDescription = "Strong performers";
-        } else if (averageRating >= 1200) {
-          ratingDescription = "Room to improve";
-        } else {
-          ratingDescription = "Needs focused effort";
-        }
+      const topPerformers = [...parsed]
+        .sort((a, b) => b.rating - a.rating)
+        .slice(0, 3);
 
-        setStats([
-          {
-            title: "Total Students",
-            value: total,
-            description: `+${total - inactive} active this week`,
-            icon: <Users className="text-muted-foreground" />,
-          },
-          {
-            title: "Average Rating",
-            value: averageRating,
-            description: ratingDescription,
-            icon: <TrendingUp className="text-muted-foreground" />,
-            valueClass: "text-black dark:text-white",
-            descriptionClass: "text-green-600",
-          },
-          {
-            title: "Top Performer",
-            value: topPerformer.rating || 0,
-            description: topPerformer.name || "-",
-            icon: <Award className="text-muted-foreground" />,
-          },
-          {
-            title: "Inactive Students",
-            value: inactive,
-            description: "Need attention",
-            icon: <Clock className="text-muted-foreground" />,
-            valueClass: "text-red-600",
-            descriptionClass: "text-muted-foreground",
-          },
-          {
-            title: "Contributions",
-            value: contributions,
-            description: "Recent AC submissions",
-            icon: <Target className="text-muted-foreground" />,
-            descriptionClass: "text-green-600",
-          },
-        ]);
+      const inactiveStudents = parsed.filter(
+        (s) => s.status === "inactive"
+      ).length;
 
-        setLoadingStats(false);
-      } catch (err) {
-        console.error("Error fetching students:", err);
+      const totalContributions = parsed.reduce(
+        (acc, curr) => acc + (curr.contribution || 0),
+        0
+      );
+
+      setStats([
+        {
+          title: "Total Students",
+          value: totalStudents,
+          description: `+${totalStudents - inactiveStudents} active this week`,
+          icon: <Users className="text-muted-foreground" />,
+        },
+        {
+          title: "Average Rating",
+          value: averageRating,
+          description: averageRating,
+          icon: <TrendingUp className="text-muted-foreground" />,
+          valueClass: "text-black dark:text-white",
+          descriptionClass: "text-green-600",
+        },
+        {
+          title: "Top Performer",
+          value: topPerformers[0]?.rating || 0,
+          description: topPerformers[0]?.name || "-",
+          icon: <Award className="text-muted-foreground" />,
+        },
+        {
+          title: "Inactive Students",
+          value: inactiveStudents,
+          description: "Need attention",
+          icon: <Clock className="text-muted-foreground" />,
+          valueClass: "text-red-600",
+          descriptionClass: "text-muted-foreground",
+        },
+        {
+          title: "Contributions",
+          value: totalContributions,
+          description: "Total submissions",
+          icon: <Target className="text-muted-foreground" />,
+          descriptionClass: "text-green-600 bottom-0 top-0",
+        },
+      ]);
+      setLoadingStats(false);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchStatsFromLocalStorage();
+
+    const handleCustomUpdate = () => {
+      fetchStatsFromLocalStorage();
+    };
+
+    const handleStorageEvent = (event) => {
+      if (event.key === "studentData") {
+        fetchStatsFromLocalStorage();
       }
     };
 
-    fetchStudents();
+    window.addEventListener("storage", handleStorageEvent); // sync across tabs
+    window.addEventListener("studentDataUpdated", handleCustomUpdate); // sync in same tab
+
+    return () => {
+      window.removeEventListener("storage", handleStorageEvent);
+      window.removeEventListener("studentDataUpdated", handleCustomUpdate);
+    };
   }, []);
-  
-  
+
+
+
   return (
     <main className="flex flex-col bg-background">
       {loadingStats ? (
@@ -164,14 +134,14 @@ const Home = () => {
         <>
           <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-8">
             {stats.map((stat, index) => (
-              <Card key={index}>
+              <Card key={index} className="flex flex-col justify-between h-full">
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
                   <CardTitle className="text-3xl font-medium">
                     {stat.title}
                   </CardTitle>
                   {stat.icon}
                 </CardHeader>
-                <CardContent>
+                <CardContent className="relative botom-0  ">
                   <div
                     className={`text-[1.65rem] font-bold ${
                       stat.valueClass ?? ""
@@ -195,8 +165,6 @@ const Home = () => {
       )}
     </main>
   );
-  
-  
 };
 
 export default Home;
