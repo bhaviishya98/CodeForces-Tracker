@@ -160,13 +160,36 @@ npm run dev
 
 ## 📸 Screenshots
 
+### 🏠 Home Dashboard
+
 ![Home](assets/Home.png)
+
+### 🏠 Home (Light Theme)
+
 ![Home-Light-Theme](assets/Home-Light-Theme.png)
+
+### 👤 Student Profile View
+
 ![Student-Profile](assets/Student-Profile.png)
+
+### ➕ Add Student Modal
+
 ![Add-Student](assets/Add-Student.png)
+
+### 📈 Rating Chart
+
 ![Rating-Chart](assets/Rating-Chart.png)
+
+### 🏁 Contest History
+
 ![Contest-History](assets/Contest-History.png)
+
+### 📊 Problem Stats & Bar Chart
+
 ![Problem-Sats](assets/Problem-Stats&Bar-Chart.png)
+
+### 🔥 Submission Heatmap
+
 ![Submission-Heatmap](assets/Submission-Heatmap.png)
 
 ---
