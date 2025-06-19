@@ -38,7 +38,14 @@ export default function Header() {
 
       if (!res.ok) throw new Error("Sync failed");
 
-      toast.success("✅ Codeforces data synced successfully!");
+      await fetch("http://localhost:5000/api/inactivity-check", {
+        method: "POST",
+      });
+
+      window.dispatchEvent(new Event("studentDataUpdated"));
+      
+      toast.success("✅ Synced & inactivity check complete!");
+
 
       const now = new Date();
       setLastSynced(now);

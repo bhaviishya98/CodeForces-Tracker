@@ -39,7 +39,6 @@ export default function StudentTable({ className }) {
   const [statusFilter, setStatusFilter] = useState("All");
   const [selectedStudentIds, setSelectedStudentIds] = useState([]);
 
-
   const saveToLocalStorage = (students) => {
     localStorage.setItem("studentData", JSON.stringify(students));
   };
@@ -121,6 +120,14 @@ export default function StudentTable({ className }) {
     };
 
     fetchStudents();
+
+    // Listen to refresh trigger
+    const listener = () => fetchStudents();
+    window.addEventListener("studentDataUpdated", listener);
+
+    return () => {
+      window.removeEventListener("studentDataUpdated", listener);
+    };
   }, []);
 
   const handleAddStudent = async () => {
@@ -153,23 +160,6 @@ export default function StudentTable({ className }) {
     setEditModalOpen(true);
   };
 
-  // const handleSaveEdit = async (updatedData) => {
-  //   try {
-  //     const res = await axios.put(
-  //       `/students/${selectedStudent._id}`,
-  //       {
-  //         ...updatedData,
-  //         cfHandle: updatedData.handle,
-  //       }
-  //     );
-  //     setStudentList((prev) =>
-  //       prev.map((s) => (s._id === selectedStudent._id ? res.data : s))
-  //     );
-  //   } catch (err) {
-  //     console.error("Failed to edit student:", err);
-  //   }
-  // };
-
   const handleRemoveStudent = async (id) => {
     try {
       await axios.delete(`students/${id}`);
@@ -181,7 +171,6 @@ export default function StudentTable({ className }) {
       console.error("Failed to delete student:", err);
     }
   };
-
 
   const handleRemoveSelectedStudents = async () => {
     if (
@@ -211,12 +200,32 @@ export default function StudentTable({ className }) {
     }
   };
 
-
   const confirmDelete = (id) => {
     if (confirm("Are you sure you want to delete this student?")) {
       handleRemoveStudent(id);
       window.dispatchEvent(new Event("studentDataUpdated"));
+    }
+  };
 
+  const toggleAutoEmail = async (student) => {
+    const updated = {
+      ...student,
+      autoEmailDisabled: !student.autoEmailDisabled,
+    };
+
+    try {
+      const res = await axios.put(`/students/${student._id}`, updated);
+
+      // Update local list
+      const updatedList = studentList.map((s) =>
+        s._id === student._id ? res.data : s
+      );
+      setStudentList(updatedList);
+      saveToLocalStorage(updatedList);
+      window.dispatchEvent(new Event("studentDataUpdated"));
+    } catch (err) {
+      console.error("Failed to update autoEmailDisabled:", err);
+      alert("Failed to toggle auto email status.");
     }
   };
 
@@ -336,6 +345,7 @@ export default function StudentTable({ className }) {
                     <th className="p-3">Max Rating</th>
                     <th className="p-3">Streak</th>
                     <th className="p-3">Contribution</th>
+                    <th className="p-3">Reminders</th>
                     <th className="p-3">Actions</th>
                   </tr>
                 </thead>
@@ -414,6 +424,9 @@ export default function StudentTable({ className }) {
                       <td className="p-3 font-medium">
                         {student.contribution}
                       </td>
+                      <td className="p-3 text-center">
+                        {student.inactivityReminderCount || "-"}
+                      </td>
                       <td className="p-3">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -430,6 +443,15 @@ export default function StudentTable({ className }) {
                             >
                               Edit
                             </DropdownMenuItem>
+
+                            <DropdownMenuItem
+                              onClick={() => toggleAutoEmail(student)}
+                            >
+                              {student.autoEmailDisabled
+                                ? "Enable Auto Email"
+                                : "Disable Auto Email"}
+                            </DropdownMenuItem>
+
                             <DropdownMenuItem
                               onClick={() => confirmDelete(student._id)}
                             >

@@ -8,6 +8,7 @@ import studentRoutes from './routes/studentRoutes.js';
 import exportRoutes from './routes/exportRoute.js';
 import contestRoutes from './routes/contest.js';
 import syncRoute from "./routes/sync.js";
+import mailRoute from './routes/mail.js';
 
 
 dotenv.config();
@@ -28,6 +29,7 @@ app.use('/api', studentRoutes);
 app.use('/api', exportRoutes);
 app.use("/api", contestRoutes);
 app.use("/api", syncRoute);
+app.use("/api", mailRoute);
 app.get('/', (req, res) => {
     res.send('Welcome to the Student Management API');
 }); 

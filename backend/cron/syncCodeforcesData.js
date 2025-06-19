@@ -22,7 +22,6 @@ const syncCodeforcesData = async () => {
 
       const cfData = await fetchCodeforcesInfo(handle, studentId);
 
-      
       if (!cfData || !cfData.rating) {
         console.warn(
           `⚠️ Skipping ${student.name} due to missing or invalid data`
@@ -30,19 +29,18 @@ const syncCodeforcesData = async () => {
         continue;
       }
 
-      // ✅ Update student record regardless of problem/contest updates
+      // ✅ Update student ratings and core info
       student.rating = cfData.rating;
       student.maxRating = cfData.maxRating;
       student.rank = cfData.rank;
       student.maxRank = cfData.maxRank;
       student.contribution = cfData.contribution;
       student.updatedAt = new Date();
+
       await student.save();
 
-      // ✅ Update contest history only if present
+      // ✅ Update contest history if present
       if (cfData.contestHistory?.length > 0) {
-        // await ContestHistory.deleteMany({ student: studentId });
-
         const contestDocs = cfData.contestHistory.map((entry) => ({
           ...entry,
           student: studentId,
@@ -53,21 +51,22 @@ const syncCodeforcesData = async () => {
         console.log(`ℹ️ No new contests for ${student.name}`);
       }
 
-      // ✅ Update solved problems only if present
+      // ✅ Update solved problems if present
       if (cfData.solvedProblems?.length > 0) {
-        // await SolvedProblem.deleteMany({ student: studentId });
+        const problemDocs = cfData.solvedProblems
+          .filter((p) => typeof p.contestId === "number") // ✅ Prevent DB errors
+          .map((entry) => ({
+            ...entry,
+            student: studentId,
+          }));
 
-        const problemDocs = cfData.solvedProblems.map((entry) => ({
-          ...entry,
-          student: studentId,
-        }));
         await SolvedProblem.insertMany(problemDocs);
         console.log(`✅ Inserted ${problemDocs.length} solved problems`);
       } else {
         console.log(`ℹ️ No new solved problems for ${student.name}`);
       }
 
-      console.log(`✅ Synced ${student.name}`);
+      console.log(`✅ Finished syncing ${student.name}`);
     }
 
     console.log("🟢 All students synced successfully.");

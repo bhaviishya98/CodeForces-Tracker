@@ -11,13 +11,15 @@ const studentSchema = new mongoose.Schema(
     streak: { type: Number, default: 0 },
     status: {
       type: String,
-      enum: ["active", "inactive"], 
+      enum: ["active", "inactive"],
       default: "active",
     },
     maxRating: { type: Number, default: 0 },
     maxRank: { type: String, default: "unrated" },
     contribution: { type: Number, default: 0 },
-    favorite: { type: Boolean, default: false },
+    inactivityReminderCount: { type: Number, default: 0 },
+    autoEmailDisabled: { type: Boolean, default: false },
+    lastSubmissionDate: { type: Date }, 
   },
   { timestamps: true }
 );
