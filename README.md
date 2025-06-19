@@ -82,7 +82,7 @@ SPS/
 | ----------------------- | ----------------- |
 | **MongoDB**             | Database          |
 | **Express.js**          | REST API          |
-| **React.js (19.x)**     | Frontend          |
+| **React.js + Vite**     | Frontend          |
 | **Node.js**             | Backend runtime   |
 | **TailwindCSS**         | Styling           |
 | **Recharts + Chart.js** | Graphs            |
