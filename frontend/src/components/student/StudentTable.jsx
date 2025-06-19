@@ -24,6 +24,7 @@ import AddStudentModal from "@/components/student/AddStudentModal"; // adjust pa
 import axios from "@/lib/axios"; // adjust path as needed
 import EditStudentModal from "@/components/student/EditStudentModal"; // adjust path as needed
 import { useNavigate } from "react-router-dom";
+import { Trash2 } from "lucide-react";
 
 export default function StudentTable({ className }) {
   const navigate = useNavigate();
@@ -36,6 +37,8 @@ export default function StudentTable({ className }) {
   const [sortOrder, setSortOrder] = useState("asc");
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
+  const [selectedStudentIds, setSelectedStudentIds] = useState([]);
+
 
   const saveToLocalStorage = (students) => {
     localStorage.setItem("studentData", JSON.stringify(students));
@@ -172,12 +175,42 @@ export default function StudentTable({ className }) {
       await axios.delete(`students/${id}`);
       const updatedList = studentList.filter((student) => student._id !== id);
       setStudentList(updatedList);
-      saveToLocalStorage(updatedList); // Save after 
+      saveToLocalStorage(updatedList);
       window.dispatchEvent(new Event("studentDataUpdated"));
     } catch (err) {
       console.error("Failed to delete student:", err);
     }
   };
+
+
+  const handleRemoveSelectedStudents = async () => {
+    if (
+      selectedStudentIds.length === 0 ||
+      !confirm(`Delete ${selectedStudentIds.length} selected students?`)
+    ) {
+      return;
+    }
+
+    try {
+      // Optionally: send batch delete to backend if supported
+      await Promise.all(
+        selectedStudentIds.map((id) => axios.delete(`students/${id}`))
+      );
+
+      const updatedList = studentList.filter(
+        (student) => !selectedStudentIds.includes(student._id)
+      );
+
+      setStudentList(updatedList);
+      setSelectedStudentIds([]);
+      saveToLocalStorage(updatedList);
+      window.dispatchEvent(new Event("studentDataUpdated"));
+    } catch (err) {
+      console.error("Failed to delete selected students:", err);
+      alert("An error occurred while deleting students.");
+    }
+  };
+
 
   const confirmDelete = (id) => {
     if (confirm("Are you sure you want to delete this student?")) {
@@ -258,8 +291,12 @@ export default function StudentTable({ className }) {
                   Sort by Name
                 </Button>
 
-                <Button variant="outline" size="icon" onClick={sortByName}>
-                  <ArrowUpDown className="w-4 h-4" />
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={handleRemoveSelectedStudents}
+                >
+                  <Trash2 className="w-4 h-4" />
                 </Button>
               </div>
             </div>
@@ -269,7 +306,26 @@ export default function StudentTable({ className }) {
                 <thead className="bg-muted text-left text-xl">
                   <tr className="border-b">
                     <th className="p-3">
-                      <input type="checkbox" />
+                      <input
+                        type="checkbox"
+                        className="accent-purple-600"
+                        checked={
+                          filteredStudents.length > 0 &&
+                          filteredStudents.every((student) =>
+                            selectedStudentIds.includes(student._id)
+                          )
+                        }
+                        onChange={(e) => {
+                          const checked = e.target.checked;
+                          if (checked) {
+                            setSelectedStudentIds(
+                              filteredStudents.map((s) => s._id)
+                            );
+                          } else {
+                            setSelectedStudentIds([]);
+                          }
+                        }}
+                      />
                     </th>
                     <th className="p-3">Status</th>
                     <th className="p-3">Name</th>
@@ -288,7 +344,19 @@ export default function StudentTable({ className }) {
                   {filteredStudents.map((student, i) => (
                     <tr key={i} className="border-b">
                       <td className="p-3">
-                        <input type="checkbox" />
+                        <input
+                          type="checkbox"
+                          className="accent-purple-600"
+                          checked={selectedStudentIds.includes(student._id)}
+                          onChange={(e) => {
+                            const checked = e.target.checked;
+                            setSelectedStudentIds((prev) =>
+                              checked
+                                ? [...prev, student._id]
+                                : prev.filter((id) => id !== student._id)
+                            );
+                          }}
+                        />
                       </td>
                       <td className="p-3">
                         {student.status === "active" ? (

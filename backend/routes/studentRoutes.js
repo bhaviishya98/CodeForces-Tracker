@@ -88,6 +88,7 @@ router.put("/students/:id", async (req, res) => {
 
     if (prevHandle !== newHandle) {
       await ContestHistory.deleteMany({ student: studentId });
+      await SolvedProblem.deleteMany({ student: studentId });
 
       // 🔄 Re-fetch and store new contest data
       await updateContestHistory(newHandle, studentId);

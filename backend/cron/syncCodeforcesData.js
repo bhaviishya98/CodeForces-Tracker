@@ -41,7 +41,7 @@ const syncCodeforcesData = async () => {
 
       // ✅ Update contest history only if present
       if (cfData.contestHistory?.length > 0) {
-        await ContestHistory.deleteMany({ student: studentId });
+        // await ContestHistory.deleteMany({ student: studentId });
 
         const contestDocs = cfData.contestHistory.map((entry) => ({
           ...entry,
@@ -55,7 +55,7 @@ const syncCodeforcesData = async () => {
 
       // ✅ Update solved problems only if present
       if (cfData.solvedProblems?.length > 0) {
-        await SolvedProblem.deleteMany({ student: studentId });
+        // await SolvedProblem.deleteMany({ student: studentId });
 
         const problemDocs = cfData.solvedProblems.map((entry) => ({
           ...entry,

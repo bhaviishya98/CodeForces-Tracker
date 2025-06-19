@@ -13,10 +13,16 @@ const fetchCodeforcesInfo = async (handle, studentId) => {
     // Fetch contest history
     const contestHistory =
       (await fetchCodeforcesHistory(handle, studentId, false)) || [];
+    
+    console.log(`🔍 Fetched ${contestHistory.length} contests for ${handle}`);
+    
 
     // Fetch solved problems
     const solvedProblems =
       (await fetchUnsolvedProblems(handle, studentId, false)) || [];
+    
+    console.log(`🔍 Fetched ${solvedProblems.length} solved problems for ${handle}`);
+    
 
     // Return a full object
     return {
