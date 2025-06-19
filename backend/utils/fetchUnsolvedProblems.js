@@ -1,64 +1,58 @@
 import axios from "axios";
 import SolvedProblem from "../models/SolvedProblem.js";
 
-async function updateSolvedProblems(cfHandle, studentId) {
+async function updateSolvedProblems(cfHandle, studentId, shouldSave = true) {
   try {
     const res = await axios.get(
       `https://codeforces.com/api/user.status?handle=${cfHandle}`
     );
 
-    if (res.data.status !== "OK") return;
+    if (res.data.status !== "OK") return [];
 
     const submissions = res.data.result;
 
+    // 🔍 Get already saved problems
+    const existing = await SolvedProblem.find({ student: studentId });
+    const existingProblemKeys = new Set(
+      existing.map((p) => `${p.contestId}-${p.index}`)
+    );
+
     const solvedSet = new Set();
-    const attemptedSet = new Set();
     const newSolvedProblems = [];
 
-    for (let sub of submissions) {
-      if (!sub.problem || !sub.verdict) continue;
+    for (const sub of submissions) {
+      if (!sub.problem || !sub.verdict || sub.verdict !== "OK") continue;
 
-      const problemKey = `${sub.problem.contestId}-${sub.problem.index}`;
-      attemptedSet.add(problemKey);
+      const contestId = sub.problem.contestId || "virtual";
+      const problemKey = `${contestId}-${sub.problem.index}`;
 
-      if (sub.verdict === "OK" && !solvedSet.has(problemKey)) {
-        solvedSet.add(problemKey);
+      if (solvedSet.has(problemKey) || existingProblemKeys.has(problemKey))
+        continue;
 
-        const timestamp = new Date(sub.creationTimeSeconds * 1000);
+      solvedSet.add(problemKey);
 
-        newSolvedProblems.push({
-          student: studentId,
-          contestId: sub.problem.contestId || null,
-          index: sub.problem.index,
-          name: sub.problem.name,
-          rating: sub.problem.rating || null,
-          timestamp,
-          tags: sub.problem.tags || [],
-          source: sub.author?.contestId ? "contest" : "practice",
-        });
-      }
+      const timestamp = new Date(sub.creationTimeSeconds * 1000);
+
+      newSolvedProblems.push({
+        student: studentId,
+        contestId,
+        index: sub.problem.index,
+        name: sub.problem.name,
+        rating: sub.problem.rating || null,
+        timestamp,
+        tags: sub.problem.tags || [],
+        source: sub.author?.contestId ? "contest" : "practice",
+      });
     }
 
-    // Save all solved problems to DB (skip duplicates)
-    const bulkOps = newSolvedProblems.map((p) => ({
-      updateOne: {
-        filter: {
-          student: p.student,
-          contestId: p.contestId,
-          index: p.index,
-        },
-        update: { $setOnInsert: p },
-        upsert: true,
-      },
-    }));
-
-    if (bulkOps.length > 0) {
-      await SolvedProblem.bulkWrite(bulkOps);
+    if (shouldSave && newSolvedProblems.length > 0) {
+      await SolvedProblem.insertMany(newSolvedProblems);
     }
 
-    
+    return [...existing, ...newSolvedProblems];
   } catch (err) {
-    console.error("Failed to update solved problems:", err.message);
+    console.error("❌ Failed to update solved problems:", err.message);
+    return [];
   }
 }
 

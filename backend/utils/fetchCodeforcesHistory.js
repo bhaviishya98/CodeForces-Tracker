@@ -1,7 +1,7 @@
 import axios from "axios";
 import ContestHistory from "../models/ContestHistory.js";
 
-async function updateContestHistory(cfHandle, studentId) {
+async function updateContestHistory(cfHandle, studentId, shouldSave = true) {
   try {
     const ratingRes = await axios.get(
       `https://codeforces.com/api/user.rating?handle=${cfHandle}`
@@ -72,11 +72,14 @@ async function updateContestHistory(cfHandle, studentId) {
       };
     });
 
-    
+    if (shouldSave && formatted.length > 0) {
+      await ContestHistory.insertMany(formatted);
+    }
 
-    await ContestHistory.insertMany(formatted);
+    return [...existing, ...formatted];
   } catch (err) {
     console.error("Failed to update contest history:", err.message);
+    return [];
   }
 }
 

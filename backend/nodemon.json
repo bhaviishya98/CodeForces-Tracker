@@ -1,0 +1,5 @@
+{
+  "watch": ["server.js", "routes", "controllers", "models"],
+  "ignore": ["cron-config.json", "logs", "*.log", "tmp"],
+  "ext": "js,json"
+}

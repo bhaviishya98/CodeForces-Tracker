@@ -1,20 +1,25 @@
-// components/Header.jsx
 import { useTheme } from "@/components/layout/theme-provider";
-import { Switch } from "@/components/ui/switch";
 import { Trophy, Sun, Moon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
-import "@/index.css"; // ensure you load Tailwind
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
+import "@/index.css";
 
 export default function Header() {
   const { theme, setTheme } = useTheme();
   const [isDark, setIsDark] = useState(theme === "dark");
-  const [studentList, setStudentList] = useState([]);
+  const [lastSynced, setLastSynced] = useState(null);
+  const [isSyncing, setIsSyncing] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
     setIsDark(theme === "dark");
+
+    const saved = localStorage.getItem("lastSynced");
+    if (saved) {
+      setLastSynced(new Date(saved));
+    }
   }, [theme]);
 
   const toggleTheme = (checked) => {
@@ -23,20 +28,51 @@ export default function Header() {
   };
 
   const handleSyncAllStudents = async () => {
-    const updatedList = await Promise.all(
-      studentList.map(async (student) => {
-        const cfData = await fetchCodeforcesInfo(student.handle);
-        return { ...student, ...cfData };
-      })
-    );
+    try {
+      setIsSyncing(true);
+      toast.loading("🔄 Syncing student data...");
 
-    setStudentList(updatedList);
+      const res = await fetch("http://localhost:5000/api/sync", {
+        method: "POST",
+      });
+
+      if (!res.ok) throw new Error("Sync failed");
+
+      toast.success("✅ Codeforces data synced successfully!");
+
+      const now = new Date();
+      setLastSynced(now);
+      localStorage.setItem("lastSynced", now.toISOString());
+    } catch (err) {
+      console.error(err);
+      toast.error("❌ Failed to sync Codeforces data.");
+    } finally {
+      toast.dismiss();
+      setIsSyncing(false);
+    }
+  };
+
+  const formatDateTime = (date) => {
+    if (!date) return "Not synced yet";
+    const options = {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hour12: false,
+    };
+    return new Intl.DateTimeFormat("en-GB", options).format(date);
   };
 
   return (
     <div className="flex flex-row justify-between items-center gap-2 mt-4 px-8 py-2">
       <div className="flex flex-col gap-2">
-        <button className="flex items-center gap-2" onClick={() => navigate("/")}>
+        <button
+          className="flex items-center gap-2"
+          onClick={() => navigate("/")}
+        >
           <Trophy className="h-[2.3rem] w-[2.3rem] text-yellow-500" />
           <h1 className="text-5xl font-bold">Codeforces Tracker</h1>
         </button>
@@ -44,16 +80,26 @@ export default function Header() {
           Track and manage student performance on Codeforces
         </h2>
       </div>
+
       <div className="flex items-center gap-4">
         <Button
           variant="outline"
           size="lg"
-          className="flex items-center text-xl "
+          className="flex items-center text-xl"
           onClick={handleSyncAllStudents}
+          disabled={isSyncing}
         >
-          <RefreshCw className="!h-5 !w-5 mr-2" />
-          Sync Data
+          <RefreshCw
+            className={`!h-5 !w-5 mr-2 ${isSyncing ? "animate-spin" : ""}`}
+          />
+          {isSyncing ? "Syncing..." : "Sync Now"}
         </Button>
+
+        <div className="bg-muted text-[1rem] px-4 py-2 rounded-full flex items-center gap-2 font-medium">
+          <RefreshCw className="h-5 w-5 text-muted-foreground" />
+          Last Sync: {formatDateTime(lastSynced)}
+        </div>
+
         <div className="relative">
           <input
             type="checkbox"
