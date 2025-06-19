@@ -160,14 +160,14 @@ npm run dev
 
 ## 📸 Screenshots
 
-![Home](image.png)
-![Home-WhiteTheme](image-6.png)
-![Student-Profile](image-1.png)
-![Add-Student](image-7.png)
-![Rating-Chart](image-2.png)
-![Contest-History](image-3.png)
-![Problem-Sats](image-4.png)
-![Submission-Heatmap](image-5.png)
+![Home](assets\Home.png)
+![Home-Light-Theme](assets\Home-Light-Theme.png)
+![Student-Profile](assets\Student-Profile.png)
+![Add-Student](assets\Add-Student.png)
+![Rating-Chart](assets\Rating-Chart.png)
+![Contest-History](assets\Contest-History.png)
+![Problem-Sats](assets\Problem-Stats&Bar-Chart.png)
+![Submission-Heatmap](assets\Submission-Heatmap.png)
 
 ---
 
