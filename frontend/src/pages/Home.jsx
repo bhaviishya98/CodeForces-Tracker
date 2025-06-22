@@ -90,6 +90,7 @@ const Home = () => {
           description: "Total submissions",
           icon: <Target className="text-muted-foreground" />,
           descriptionClass: "text-green-600 bottom-0 top-0",
+          CardClass: "col-span-2 md:col-span-1 ",
         },
       ]);
       setLoadingStats(false);
@@ -132,25 +133,28 @@ const Home = () => {
         </div>
       ) : (
         <>
-          <div className="mt-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-8">
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8 px-8">
             {stats.map((stat, index) => (
-              <Card key={index} className="flex flex-col justify-between h-full">
+              <Card
+                key={index}
+                className={`flex flex-col justify-between h-full `}
+              >
                 <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
-                  <CardTitle className="text-3xl font-medium">
+                  <CardTitle className="sm:text-3xl font-medium">
                     {stat.title}
                   </CardTitle>
                   {stat.icon}
                 </CardHeader>
                 <CardContent className="relative botom-0  ">
                   <div
-                    className={`text-[1.65rem] font-bold ${
+                    className={`sm:text-[1.65rem] font-bold ${
                       stat.valueClass ?? ""
                     }`}
                   >
                     {stat.value}
                   </div>
                   <p
-                    className={`text-xl ${
+                    className={`sm:text-xl ${
                       stat.descriptionClass ?? "text-muted-foreground"
                     }`}
                   >

@@ -18,13 +18,35 @@ import {
   CheckCircle2,
   XCircle,
   Heart,
+  AtSign,
+  Phone,
+  Zap,
+  Edit,
+  Trash2,
+  Eye,
+  Send,
+  Bell,
+  BellOff,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import AddStudentModal from "@/components/student/AddStudentModal"; // adjust path as needed
 import axios from "@/lib/axios"; // adjust path as needed
 import EditStudentModal from "@/components/student/EditStudentModal"; // adjust path as needed
 import { useNavigate } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
+const getStatusIcon = (status) =>
+  status === "active" ? (
+    <CheckCircle2 className="text-green-500 w-4 h-4" />
+  ) : (
+    <XCircle className="text-red-500 w-4 h-4" />
+  );
+
+const getRatingColor = (rating) => {
+  if (rating >= 1600) return "text-purple-500";
+  if (rating >= 1400) return "text-blue-500";
+  return "text-green-500";
+};
 
 export default function StudentTable({ className }) {
   const navigate = useNavigate();
@@ -231,49 +253,55 @@ export default function StudentTable({ className }) {
 
   return (
     <main className={`flex flex-col bg-background p-8 ${className}`}>
-      <Card className="mt-6">
-        <CardHeader className="flex flex-row items-center justify-between">
+      <Card className="my-6">
+        <CardHeader className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0">
           <div className="space-y-1">
-            <CardTitle className="flex items-center gap-2 text-3xl">
+            <CardTitle className="flex items-center gap-2 text-2xl sm:text-3xl">
               <span>👥 Student Management</span>
             </CardTitle>
-            <p className="text-[1.15rem] text-muted-foreground">
+            <p className="sm:text-[1.15rem] text-muted-foreground">
               Manage enrolled students and their progress
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex max-md:justify-between max-md:w-full  items-center gap-2">
             <Button
               variant="outline"
               className="text-[1.15rem]"
-              size="lg"
+              // size="lg"
               onClick={exportData}
             >
-              <Download className="!w-5 !h-5 mr-2" />
+              <Download className="!w-5 !h-5 md:mr-2" />
+              <span className="max-md:hidden">
+
               Export
+              </span>
             </Button>
             <Button
               className="text-[1.15rem]"
-              size="lg"
+              // size="lg"
               onClick={() => setModalOpen(true)}
             >
-              <Plus className="!w-5 !h-5 mr-2" />
+              <Plus className="!w-5 !h-5 md:mr-2" />
+              <span>
+
               Add Student
+              </span>
             </Button>
           </div>
         </CardHeader>
 
         <CardContent>
           <div className="flex flex-col gap-4">
-            <div className="flex flex-wrap gap-2 justify-between">
+            <div className="flex flex-col md:flex-row w-full gap-2 justify-between space-y-2 md:space-y-0">
               <Input
                 placeholder="Search students..."
-                className="w-full sm:w-64"
+                className="w-full md:w-64"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center max-md:justify-between gap-2">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
@@ -296,64 +324,31 @@ export default function StudentTable({ className }) {
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                <Button variant="outline" size="sm" onClick={sortByName}>
-                  Sort by Name
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={sortByName}>
+                    Sort by Name
+                  </Button>
 
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={handleRemoveSelectedStudents}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={handleRemoveSelectedStudents}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-
-            <div className="border rounded-md overflow-x-auto my-4">
-              <table className="w-full text-sm">
-                <thead className="bg-muted text-left text-xl">
-                  <tr className="border-b">
-                    <th className="p-3">
-                      <input
-                        type="checkbox"
-                        className="accent-purple-600"
-                        checked={
-                          filteredStudents.length > 0 &&
-                          filteredStudents.every((student) =>
-                            selectedStudentIds.includes(student._id)
-                          )
-                        }
-                        onChange={(e) => {
-                          const checked = e.target.checked;
-                          if (checked) {
-                            setSelectedStudentIds(
-                              filteredStudents.map((s) => s._id)
-                            );
-                          } else {
-                            setSelectedStudentIds([]);
-                          }
-                        }}
-                      />
-                    </th>
-                    <th className="p-3">Status</th>
-                    <th className="p-3">Name</th>
-                    <th className="p-3">Email</th>
-                    <th className="p-3">Phone</th>
-                    <th className="p-3">CF Handle</th>
-                    <th className="p-3">Current Rating</th>
-                    <th className="p-3">Max Rating</th>
-                    <th className="p-3">Streak</th>
-                    <th className="p-3">Contribution</th>
-                    <th className="p-3">Reminders</th>
-                    <th className="p-3">Actions</th>
-                  </tr>
-                </thead>
-
-                <tbody className="text-[1.25rem]">
-                  {filteredStudents.map((student, i) => (
-                    <tr key={i} className="border-b">
-                      <td className="p-3">
+            {/* <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 my-4"> */}
+            <div>
+              {filteredStudents.map((student) => (
+                <Card
+                  key={student._id}
+                  className="hover:shadow-md transition-shadow"
+                >
+                  <CardContent className="px-4 space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-2">
                         <input
                           type="checkbox"
                           className="accent-purple-600"
@@ -367,103 +362,142 @@ export default function StudentTable({ className }) {
                             );
                           }}
                         />
-                      </td>
-                      <td className="p-3">
+                        {student.favorite && (
+                          <Heart className="text-red-500 w-4 h-4" />
+                        )}
+                        <h3 className="text-xl font-semibold">
+                          {student.name}
+                        </h3>
                         {student.status === "active" ? (
                           <CheckCircle2 className="text-green-500 w-4 h-4" />
                         ) : (
                           <XCircle className="text-red-500 w-4 h-4" />
                         )}
-                      </td>
-                      <td className="p-3 font-medium flex items-center gap-1">
-                        {student.favorite && (
-                          <Heart className="text-red-500 w-4 h-4" />
-                        )}
-                        {student.name}
-                      </td>
-                      <td className="p-3">{student.email}</td>
-                      <td className="p-3">{student.phone}</td>
-                      <td className="p-3">
-                        <button
-                          className="px-2 py-1 rounded bg-muted text-xs font-mono hover:underline text-blue-600"
-                          onClick={() =>
-                            navigate(`/students/${student.cfHandle}`, {
-                              state: { student },
-                            })
-                          }
-                        >
-                          {student.cfHandle}
-                        </button>
-                      </td>
+                      </div>
 
-                      <td
-                        className="p-3 font-semibold"
-                        style={{
-                          color:
-                            student.rating >= 1600
-                              ? "#a855f7"
-                              : student.rating >= 1400
-                              ? "#3b82f6"
-                              : "#22c55e",
-                        }}
-                      >
-                        {student.rating}
-                      </td>
-                      <td className="p-3 font-semibold">{student.maxRating}</td>
-                      <td className="p-3">
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="icon">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem
+                            onClick={() =>
+                              navigate(`/students/${student.cfHandle}`, {
+                                state: { student },
+                              })
+                            }
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            View Profile
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => {
+                              setEditStudent(student);
+                              setEditModalOpen(true);
+                            }}
+                          >
+                            <Edit className="h-4 w-4 mr-2" />
+                            Edit Profile
+                          </DropdownMenuItem>
+                          <DropdownMenuItem
+                            onClick={() => toggleAutoEmail(student)}
+                          >
+                            {student.autoEmailDisabled ? (
+                              <>
+                                <BellOff className="h-4 w-4 mr-2" />
+                                Auto Email
+                              </>
+                            ) : (
+                              <>
+                                <Bell className="h-4 w-4 mr-2" />
+                                Auto Email
+                              </>
+                            )}
+                          </DropdownMenuItem>
+
+                          <DropdownMenuItem
+                            onClick={() => confirmDelete(student._id)}
+                            className="text-red-600"
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Remove
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <AtSign className="h-4 w-4 text-muted-foreground" />
+                          <span className="truncate">{student.email}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <span>{student.phone}</span>
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <div>
+                          <Badge variant="outline" className="text-xs">
+                            {student.cfHandle}
+                          </Badge>
+                        </div>
+                        <div
+                          className={`font-bold text-lg ${getRatingColor(
+                            student.rating
+                          )}`}
+                        >
+                          {student.rating}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center pt-3 border-t">
+                      <div className="flex flex-col sm:flex-row sm:space-x-6 md:space-x-8 text-sm space-y-1">
+                        {/* <p>
+                          <strong>Current Rating: </strong>
+                          <span
+                            className={`font-semibold ${
+                              student.rating >= 1600
+                                ? "text-purple-500"
+                                : student.rating >= 1400
+                                ? "text-blue-500"
+                                : "text-green-500"
+                            }`}
+                          >
+                            {student.rating}
+                          </span>
+                        </p> */}
+                        {/* <p>
+                          <strong>Max Rating:</strong> {student.maxRating}
+                        </p> */}
+                        <p>
+                          <strong>Contribution:</strong> {student.contribution}
+                        </p>
+                        <p>
+                          <strong>Reminders:</strong>{" "}
+                          {student.inactivityReminderCount || "-"}
+                        </p>
+                      </div>
+
+                      <div>
                         <span
-                          className={`px-2 py-2 rounded-full text-xs ${
+                          className={`px-3 py-1 rounded-full text-xs ${
                             student.streak > 0
                               ? "bg-black text-white"
                               : "bg-muted text-muted-foreground"
                           }`}
                         >
-                          {student.streak} days
+                          {student.streak}d streak
                         </span>
-                      </td>
-                      <td className="p-3 font-medium">
-                        {student.contribution}
-                      </td>
-                      <td className="p-3 text-center">
-                        {student.inactivityReminderCount || "-"}
-                      </td>
-                      <td className="p-3">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent>
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setEditStudent(student);
-                                setEditModalOpen(true);
-                              }}
-                            >
-                              Edit
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                              onClick={() => toggleAutoEmail(student)}
-                            >
-                              {student.autoEmailDisabled
-                                ? "Enable Auto Email"
-                                : "Disable Auto Email"}
-                            </DropdownMenuItem>
-
-                            <DropdownMenuItem
-                              onClick={() => confirmDelete(student._id)}
-                            >
-                              Remove
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
           </div>
         </CardContent>

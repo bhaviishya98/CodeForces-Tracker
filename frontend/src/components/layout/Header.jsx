@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { Label } from "../ui/label";
+import { Switch } from "../ui/switch";
 import "@/index.css";
 
 export default function Header() {
@@ -74,40 +76,41 @@ export default function Header() {
   };
 
   return (
-    <div className="flex flex-row justify-between items-center gap-2 mt-4 px-8 py-2">
-      <div className="flex flex-col gap-2">
+    // <div className="flex flex-col space-y-4 mb-6 sm:flex-row sm:justify-between sm:items-center sm:space-y-0 px-8 mt-4">
+    <div className="flex max-[454px]:flex-col max-[454px]:space-y-4 flex-row justify-between items-start space-y-0 px-8 mt-4 mb-8 min-[454px]:mb-12 sm:mb-8">
+      <div>
         <button
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 md:gap-3"
           onClick={() => navigate("/")}
         >
-          <Trophy className="h-[2.3rem] w-[2.3rem] text-yellow-500" />
-          <h1 className="text-5xl font-bold">Codeforces Tracker</h1>
+          <Trophy className="h-6 w-6 sm:h-8 md:w-8 text-yellow-500" />
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground">
+            <span className="hidden sm:inline">CodeForces Tracker</span>
+            <span className="sm:hidden">CF Tracker</span>
+          </h1>
         </button>
-        <h2 className="text-muted-foreground font-normal text-base">
-          Track and manage student performance on Codeforces
-        </h2>
+        <p className="text-muted-foreground mt-1 max-sm:hidden text-sm md:text-base">
+          Track and manage student performance
+        </p>
       </div>
 
-      <div className="flex items-center gap-4">
+      {/* <div className="flex flex-col gap-2 items-end"> */}
+      <div className="flex items-center gap-2 md:gap-4">
         <Button
           variant="outline"
-          size="lg"
-          className="flex items-center text-xl"
+          size="sm"
           onClick={handleSyncAllStudents}
           disabled={isSyncing}
+          className="flex items-center gap-2"
         >
-          <RefreshCw
-            className={`!h-5 !w-5 mr-2 ${isSyncing ? "animate-spin" : ""}`}
-          />
-          {isSyncing ? "Syncing..." : "Sync Now"}
+          <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
+          <span className="hidden sm:inline">
+            {isSyncing ? "Syncing..." : "Sync"}
+          </span>
         </Button>
 
-        <div className="bg-muted text-[1rem] px-4 py-2 rounded-full flex items-center gap-2 font-medium">
-          <RefreshCw className="h-5 w-5 text-muted-foreground" />
-          Last Sync: {formatDateTime(lastSynced)}
-        </div>
-
-        <div className="relative">
+        <div className="flex items-center space-x-2">
+          {/* <div className="relative"> */}
           <input
             type="checkbox"
             id="theme-toggle"
@@ -133,6 +136,12 @@ export default function Header() {
           </label>
         </div>
       </div>
+
+      <div className="absolute top-28 min-[454px]:top-16 min-[454px]:right-8 bg-muted text-[0.66rem] sm:text-sm px-4 py-2 rounded-full flex items-center gap-2 font-medium">
+        <RefreshCw className="h-4 w-4 text-muted-foreground" />
+        Last Sync: {formatDateTime(lastSynced)}
+      </div>
+      {/* </div> */}
     </div>
   );
 }
