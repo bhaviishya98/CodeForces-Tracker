@@ -256,10 +256,10 @@ export default function StudentTable({ className }) {
       <Card className="my-6">
         <CardHeader className="flex flex-col md:flex-row md:items-center justify-between space-y-2 md:space-y-0">
           <div className="space-y-1">
-            <CardTitle className="flex items-center gap-2 text-2xl sm:text-3xl">
+            <CardTitle className="flex items-center gap-2 text-xl min-[450px]:text-2xl sm:text-3xl">
               <span>👥 Student Management</span>
             </CardTitle>
-            <p className="sm:text-[1.15rem] text-muted-foreground">
+            <p className="text-[0.8rem] sm:text-[1.15rem] text-muted-foreground">
               Manage enrolled students and their progress
             </p>
           </div>
@@ -272,21 +272,14 @@ export default function StudentTable({ className }) {
               onClick={exportData}
             >
               <Download className="!w-5 !h-5 md:mr-2" />
-              <span className="max-md:hidden">
-
-              Export
-              </span>
+              <span className="max-md:hidden">Export</span>
             </Button>
             <Button
-              className="text-[1.15rem]"
-              // size="lg"
               onClick={() => setModalOpen(true)}
+              className="px-3 py-2 text-sm md:text-base lg:text-lg flex items-center"
             >
-              <Plus className="!w-5 !h-5 md:mr-2" />
-              <span>
-
-              Add Student
-              </span>
+              <Plus className="w-4 h-4 md:w-5 md:h-5 md:mr-2" />
+              <span className=" md:inline">Add Student</span>
             </Button>
           </div>
         </CardHeader>
@@ -305,8 +298,10 @@ export default function StudentTable({ className }) {
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="outline" size="sm">
-                      <Filter className="w-4 h-4 mr-2" />
-                      {statusFilter} Status
+                      <Filter className="w-4 h-4 min-[450px]:mr-2" />
+                      <span className="hidden min-[450px]:inline">
+                        {statusFilter} Status
+                      </span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent>
@@ -326,7 +321,10 @@ export default function StudentTable({ className }) {
 
                 <div className="flex items-center gap-2">
                   <Button variant="outline" size="sm" onClick={sortByName}>
-                    Sort by Name
+                    <ArrowUpDown className="w-4 h-4 min-[450px]:hidden" />
+                    <span className="hidden min-[450px]:inline">
+                      Sort by Name
+                    </span>
                   </Button>
 
                   <Button
@@ -344,7 +342,7 @@ export default function StudentTable({ className }) {
               {filteredStudents.map((student) => (
                 <Card
                   key={student._id}
-                  className="hover:shadow-md transition-shadow"
+                  className="rounded-xl p-4 transition-shadow hover:shadow-lg dark:hover:shadow-xl hover:cursor-pointer "
                 >
                   <CardContent className="px-4 space-y-4">
                     <div className="flex justify-between items-start">
@@ -428,8 +426,8 @@ export default function StudentTable({ className }) {
                       </DropdownMenu>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div className="space-y-2">
+                    <div className="flex flex-col-reverse min-[450px]:grid  min-[450px]:grid-cols-2 gap-4 text-sm">
+                      <div className="space-y-2 ">
                         <div className="flex items-center gap-2">
                           <AtSign className="h-4 w-4 text-muted-foreground" />
                           <span className="truncate">{student.email}</span>
@@ -439,14 +437,14 @@ export default function StudentTable({ className }) {
                           <span>{student.phone}</span>
                         </div>
                       </div>
-                      <div className="space-y-2">
+                      <div className="space-y-2 max-[450px]:flex max-[450px]:flex-row max-[450px]:justify-between">
                         <div>
-                          <Badge variant="outline" className="text-xs">
+                          <Badge variant="outline" className="text-sm">
                             {student.cfHandle}
                           </Badge>
                         </div>
                         <div
-                          className={`font-bold text-lg ${getRatingColor(
+                          className={`font-bold  text-lg ${getRatingColor(
                             student.rating
                           )}`}
                         >
@@ -456,7 +454,7 @@ export default function StudentTable({ className }) {
                     </div>
 
                     <div className="flex justify-between items-center pt-3 border-t">
-                      <div className="flex flex-col sm:flex-row sm:space-x-6 md:space-x-8 text-sm space-y-1">
+                      <div className="flex flex-col sm:flex-row sm:space-x-6 md:space-x-8 text-[0.75rem] min-[450px]:text-sm space-y-1">
                         {/* <p>
                           <strong>Current Rating: </strong>
                           <span
@@ -485,7 +483,7 @@ export default function StudentTable({ className }) {
 
                       <div>
                         <span
-                          className={`px-3 py-1 rounded-full text-xs ${
+                          className={`px-3 py-1 rounded-full text-[0.65rem] min-[450px]:text-xs ${
                             student.streak > 0
                               ? "bg-black text-white"
                               : "bg-muted text-muted-foreground"

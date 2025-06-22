@@ -80,7 +80,7 @@ export default function Header() {
     <div className="flex max-[454px]:flex-col max-[454px]:space-y-4 flex-row justify-between items-start space-y-0 px-8 mt-4 mb-8 min-[454px]:mb-12 sm:mb-8">
       <div>
         <button
-          className="flex items-center gap-2 md:gap-3"
+          className="flex items-center gap-2 md:gap-3 hover:cursor-pointer transition-colors"
           onClick={() => navigate("/")}
         >
           <Trophy className="h-6 w-6 sm:h-8 md:w-8 text-yellow-500" />
@@ -101,7 +101,7 @@ export default function Header() {
           size="sm"
           onClick={handleSyncAllStudents}
           disabled={isSyncing}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 hover:cursor-pointer transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
         >
           <RefreshCw className={`h-4 w-4 ${isSyncing ? "animate-spin" : ""}`} />
           <span className="hidden sm:inline">

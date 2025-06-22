@@ -16,7 +16,7 @@ const RatingGraph = ({ data }) => {
 
   return (
     <div>
-      <h3 className="text-lg font-semibold mb-2">Solved Problems by Rating</h3>
+      <h3 className="md:text-lg font-semibold mb-2">Solved Problems by Rating</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
           data={data}

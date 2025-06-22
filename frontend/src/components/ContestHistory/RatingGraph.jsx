@@ -1,4 +1,4 @@
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"; // Adjust path if needed
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import {
@@ -43,7 +43,7 @@ const RatingGraph = ({ data }) => {
         label: "Rating",
         data: ratings,
         borderColor: "#4f46e5", // indigo-600
-        backgroundColor: "#6366f1", // yellow-200 or indigo-200
+        backgroundColor: "#6366f1",
         tension: 0.3,
         pointRadius: 4,
         pointHoverRadius: 6,
@@ -53,10 +53,11 @@ const RatingGraph = ({ data }) => {
 
   const options = {
     responsive: true,
+    maintainAspectRatio: false, // crucial for resizing height dynamically
     plugins: {
       legend: {
         labels: {
-          // color: isDark ? "#e4e4e7" : "#1f2937",
+          color: isDark ? "#e4e4e7" : "#1f2937",
         },
       },
       tooltip: {
@@ -68,10 +69,10 @@ const RatingGraph = ({ data }) => {
       x: {
         title: { display: true, text: "Contest Id" },
         ticks: {
-          color: isDark ? "#d4d4d8" : "#a1a1aa", // gray-300 or gray-600
+          color: isDark ? "#d4d4d8" : "#a1a1aa",
         },
         grid: {
-          color: isDark ? "#27272a" : "#e5e7eb", // zinc-800 or gray-200
+          color: isDark ? "#27272a" : "#e5e7eb",
         },
       },
       y: {
@@ -87,16 +88,17 @@ const RatingGraph = ({ data }) => {
   };
 
   return (
-    <Card className="mt-4">
+    <Card className="mt-4 w-full">
       <CardHeader>
-        <CardTitle className="text-lg">Rating Progress</CardTitle>
+        <CardTitle className="text-base sm:text-lg">Rating Progress</CardTitle>
       </CardHeader>
-      <CardContent>
-        <Line data={chartData} options={options} />
+      <CardContent className="h-[300px] sm:h-[400px] md:h-[500px]">
+        <div className="relative w-full h-full">
+          <Line data={chartData} options={options} />
+        </div>
       </CardContent>
     </Card>
   );
 };
 
 export default RatingGraph;
-

@@ -41,7 +41,7 @@ const ProblemSolving = ({ studentId }) => {
 
   return (
     <div className="bg-card p-4 rounded-xl shadow-sm">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex max-sm:flex-col max-sm:space-y-4 justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Problem Solving Stats</h2>
         <FilterSelector selected={filter} onChange={setFilter} />
       </div>
@@ -58,7 +58,7 @@ const ProblemSolving = ({ studentId }) => {
       ) : (
         <>
           <div className="mb-6">
-            <h3 className="text-lg font-semibold">Overall Stats</h3>
+            <h3 className="md:text-lg font-semibold">Overall Stats</h3>
             <p>Total Solved: {stats.totalSolved}</p>
             <p>Average Rating: {stats.averageRating}</p>
             <p>Average per Day: {stats.averagePerDay}</p>

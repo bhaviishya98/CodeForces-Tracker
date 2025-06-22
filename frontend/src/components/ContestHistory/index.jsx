@@ -31,7 +31,7 @@ const ContestHistory = ({ studentId }) => {
 
   return (
     <div className="bg-card p-4 rounded-xl shadow-sm">
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex max-sm:flex-col max-sm:space-y-4 justify-between items-center mb-4">
         <h2 className="text-xl font-bold">Contest History</h2>
         <FilterSelector selected={filter} onChange={setFilter} />
       </div>
