@@ -168,6 +168,10 @@ npm run dev
 
 ![Home-Light-Theme](assets/Home-Light-Theme.png)
 
+### 👥 Students Profile Options
+
+![Student-Profile-Options](assets/StudentProfile-Options.png)
+
 ### 👤 Student Profile View
 
 ![Student-Profile](assets/Student-Profile.png)
